@@ -8,4 +8,5 @@ venv: requirements.txt
 
 
 pull_and_push:
+	$(PYTHON) ghcr_bot/run.py
 	@echo 'Pull-and-Push Job is Finished'

@@ -3,6 +3,9 @@ name: push images
 on:
   push:
 
+env:
+  BASE_REPO: ghcr.io/ghcr-library/
+
 jobs:
   pull-container:
     name: pull and push container
