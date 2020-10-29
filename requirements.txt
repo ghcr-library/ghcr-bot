@@ -1,1 +1,2 @@
 fan-tools==2.9.0
+httpx==0.16.1

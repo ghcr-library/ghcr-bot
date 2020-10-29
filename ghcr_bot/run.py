@@ -3,11 +3,11 @@ import argparse
 import asyncio
 import logging
 import os
-from dataclasses import dataclass
 from pathlib import Path
-from typing import List
 
 from fan_tools.unix import asucc
+
+from ghcr_bot.utils import ImageInfo
 
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
@@ -19,12 +19,6 @@ def parse_args():
     parser = argparse.ArgumentParser(description='DESCRIPTION')
     parser.add_argument('src', nargs='?', default='./source.txt', type=Path)
     return parser.parse_args()
-
-
-@dataclass
-class ImageInfo:
-    name: str
-    tags: List[str]
 
 
 def parse_image_info(line: str) -> ImageInfo:
