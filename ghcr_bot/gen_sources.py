@@ -82,9 +82,10 @@ def parse_image(args, name: str) -> ImageInfo:
 
 
 def gen_missing_info(args, info: ImageInfo) -> ImageInfo:
+    log.info(f'Missing info: {info.name}:{info.tags}')
     missing_tags = []
     for tag in info.tags:
-        if args.all_absent or check_tag(info.name, tag):
+        if not args.all_absent and  check_tag(info.name, tag):
             continue
         missing_tags.append(tag)
     return ImageInfo(name=info.name, tags=missing_tags)
@@ -95,7 +96,9 @@ def write_source(args, sources: List[ImageInfo]):
     with fname.open('w') as f:
         for source in sources:
             if source.tags:
-                f.write(f'{source.name} {" ".join(source.tags)}')
+                line = f'{source.name} {" ".join(source.tags)}\n'
+                log.info(f'Write: {line}')
+                f.write(line)
 
 
 def main():
@@ -103,6 +106,7 @@ def main():
     sync_repo(args)
     sources = []
     for name in args.images:
+        log.info(f'Check container: {name}')
         info = parse_image(args, name)
         sources.append(gen_missing_info(args, info))
     write_source(args, sources)
