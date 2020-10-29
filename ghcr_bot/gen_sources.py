@@ -27,11 +27,13 @@ CACHE_FILE = py_rel_path('../.cache')
 if not CACHE_FILE.exists():
     CACHE_FILE.write_text('{}')
 CACHE = json.loads(CACHE_FILE.read_text())
+STOP_WORDS = ['windowsservercore']
 
 
 def add_to_cache(path):
     CACHE[path] = True
     CACHE_FILE.write_text(json.dumps(CACHE))
+
 
 def parse_args():
     parser = argparse.ArgumentParser(description='DESCRIPTION')
@@ -84,12 +86,15 @@ def parse_image(args, name: str) -> ImageInfo:
 
 
 def gen_missing_info(args, info: ImageInfo) -> ImageInfo:
-    log.info(f'Missing info: {info.name}:{info.tags}')
     missing_tags = []
     for tag in info.tags:
         if not args.all_absent and  check_tag(info.name, tag):
             continue
+        for stop_word in STOP_WORDS:
+            if stop_word in tag:
+                continue
         missing_tags.append(tag)
+    log.info(f'Missing info: {info.name}:{missing_tags}')
     return ImageInfo(name=info.name, tags=missing_tags)
 
 
