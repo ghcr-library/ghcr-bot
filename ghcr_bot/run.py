@@ -7,7 +7,7 @@ from pathlib import Path
 
 from fan_tools.unix import asucc
 
-from ghcr_bot.utils import ImageInfo
+from ghcr_bot.utils import check_tag, ImageInfo
 
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
@@ -27,6 +27,10 @@ def parse_image_info(line: str) -> ImageInfo:
 
 
 async def sync_image(image: str, tag: str):
+    if check_tag(image, tag):
+        log.info(f'Image {image}:{tag} already synced')
+        return
+
     log.info(f'Run sync for {image}:{tag}')
     old = f'{image}:{tag}'
     new = f'{BASE_REPO_PATH}{image}:{tag}'

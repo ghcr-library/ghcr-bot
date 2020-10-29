@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
-import time
 import argparse
+import json
 import logging
 import os
-import json
+import time
 from pathlib import Path
 from typing import List
-
-import httpx
 
 from fan_tools.python import py_rel_path
 from fan_tools.unix import succ
 
-from ghcr_bot.utils import ImageInfo
+from ghcr_bot.utils import check_tag, ImageInfo
 
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s [%(levelname)s] %(name)s: %(message)s')
@@ -23,16 +21,7 @@ LIB = IMAGES_REPO / 'library'
 GHCR_TOKEN = os.environ.get('GHCR_TOKEN')
 AUTH_HEADERS = {'Authorization': f'Bearer {GHCR_TOKEN}'}
 GHCR_PATH = 'https://ghcr.io/v2/ghcr-library/'
-CACHE_FILE = py_rel_path('../.cache')
-if not CACHE_FILE.exists():
-    CACHE_FILE.write_text('{}')
-CACHE = json.loads(CACHE_FILE.read_text())
 STOP_WORDS = ['windowsservercore']
-
-
-def add_to_cache(path):
-    CACHE[path] = True
-    CACHE_FILE.write_text(json.dumps(CACHE))
 
 
 def parse_args():
@@ -57,22 +46,6 @@ def sync_repo(args):
     succ(f'cd {IMAGES_REPO} && git pull -r')
 
 
-def check_tag(name, tag):
-    """
-    http HEAD https://ghcr.io/v2/ghcr-library/ubuntu/manifests/focal \
-        Authorization:"Bearer ${GHCR_TOKEN}"
-    """
-    url = f'{GHCR_PATH}{name}/manifests/{tag}'
-    if url in CACHE:
-        return CACHE[url]
-    log.debug(f'Check: {url}')
-    resp = httpx.head(url, headers=AUTH_HEADERS, timeout=30)
-    if resp.status_code == 200:
-        add_to_cache(url)
-
-    return resp.status_code == 200
-
-
 def parse_image(args, name: str) -> ImageInfo:
     fname = LIB / name
     if not fname.exists():
@@ -88,7 +61,7 @@ def parse_image(args, name: str) -> ImageInfo:
 def gen_missing_info(args, info: ImageInfo) -> ImageInfo:
     missing_tags = []
     for tag in info.tags:
-        if not args.all_absent and  check_tag(info.name, tag):
+        if not args.all_absent and check_tag(info.name, tag):
             continue
         for stop_word in STOP_WORDS:
             if stop_word in tag:
