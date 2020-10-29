@@ -37,6 +37,7 @@ def parse_args():
     parser.add_argument('images', nargs='+')
     parser.add_argument('--no-sync', action='store_true')
     parser.add_argument('--out', default='./source.txt', type=Path)
+    parser.add_argument('--all-absent', default='store_true')
     return parser.parse_args()
 
 
@@ -83,7 +84,7 @@ def parse_image(args, name: str) -> ImageInfo:
 def gen_missing_info(args, info: ImageInfo) -> ImageInfo:
     missing_tags = []
     for tag in info.tags:
-        if check_tag(info.name, tag):
+        if args.all_absent or check_tag(info.name, tag):
             continue
         missing_tags.append(tag)
     return ImageInfo(name=info.name, tags=missing_tags)
