@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import time
 import argparse
 import logging
 import os
@@ -35,9 +36,10 @@ def add_to_cache(path):
 def parse_args():
     parser = argparse.ArgumentParser(description='DESCRIPTION')
     parser.add_argument('images', nargs='+')
-    parser.add_argument('--no-sync', action='store_true')
+    parser.add_argument('--all-absent', action='store_true')
     parser.add_argument('--out', default='./source.txt', type=Path)
-    parser.add_argument('--all-absent', default='store_true')
+    parser.add_argument('--split', action='store_true')
+    parser.add_argument('--no-sync', action='store_true')
     return parser.parse_args()
 
 
@@ -91,14 +93,27 @@ def gen_missing_info(args, info: ImageInfo) -> ImageInfo:
     return ImageInfo(name=info.name, tags=missing_tags)
 
 
+def info_to_line(source: ImageInfo) -> str:
+    return f'{source.name} {" ".join(source.tags)}\n'
+
+
+def write_splitted(args, sources: List[ImageInfo]):
+    fname: Path = args.out
+    for source in sources:
+        if source.tags:
+            fname.write_text(info_to_line(source))
+            succ(f'git add {fname}')
+            succ(f'git commit -m "remove me: {source.name}"')
+            succ(f'git push')
+            time.sleep(10)
+
+
 def write_source(args, sources: List[ImageInfo]):
     fname: Path = args.out
     with fname.open('w') as f:
         for source in sources:
             if source.tags:
-                line = f'{source.name} {" ".join(source.tags)}\n'
-                log.info(f'Write: {line}')
-                f.write(line)
+                f.write(info_to_line(source))
 
 
 def main():
@@ -109,7 +124,10 @@ def main():
         log.info(f'Check container: {name}')
         info = parse_image(args, name)
         sources.append(gen_missing_info(args, info))
-    write_source(args, sources)
+    if args.split:
+        write_splitted(args, sources)
+    else:
+        write_source(args, sources)
 
 
 if __name__ == '__main__':
