@@ -21,7 +21,7 @@ LIB = IMAGES_REPO / 'library'
 GHCR_TOKEN = os.environ.get('GHCR_TOKEN')
 AUTH_HEADERS = {'Authorization': f'Bearer {GHCR_TOKEN}'}
 GHCR_PATH = 'https://ghcr.io/v2/ghcr-library/'
-STOP_WORDS = ['windowsservercore']
+STOP_WORDS = ['windowsservercore', 'nanoserver']
 
 
 def parse_args():
