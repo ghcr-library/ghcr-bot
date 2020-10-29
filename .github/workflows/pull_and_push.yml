@@ -5,6 +5,7 @@ on:
 
 env:
   BASE_REPO: ghcr.io/ghcr-library/
+  PYTHONPATH: .
 
 jobs:
   pull-container:
