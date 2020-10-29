@@ -65,8 +65,9 @@ def gen_missing_info(args, info: ImageInfo) -> ImageInfo:
             continue
         for stop_word in STOP_WORDS:
             if stop_word in tag:
-                continue
-        missing_tags.append(tag)
+                break
+        else:
+            missing_tags.append(tag)
     log.info(f'Missing info: {info.name}:{missing_tags}')
     return ImageInfo(name=info.name, tags=missing_tags)
 
